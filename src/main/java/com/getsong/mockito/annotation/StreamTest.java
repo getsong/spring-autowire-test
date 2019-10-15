@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -18,7 +21,7 @@ public class StreamTest {
     Student student1 =
         new Student(
             "Jayesh",
-            20,
+            26,
             new Address("1234"),
             Arrays.asList(new MobileNumber("1233"), new MobileNumber("1234")));
 
@@ -33,11 +36,45 @@ public class StreamTest {
     Student student3 =
         new Student(
             "Jason",
-            20,
+            21,
             new Address("1236"),
             Arrays.asList(new MobileNumber("3333"), new MobileNumber("4444")));
 
     List<Student> students = Arrays.asList(student1, student2, student3);
+
+    // Sort by age
+    Collections.sort(students);
+    log.info(students.toString());
+
+    students.sort((a, b) -> b.getAge() - a.getAge());
+    log.info(students.toString());
+
+    Stream.of(student1, student2, student3).map(Student::getName).forEach(log::info);
+
+    IntStream.range(0, 4).mapToObj(i -> "int" + i).forEach(log::info);
+
+    log.info("test parallel stream and execution order");
+    students
+        .parallelStream()
+        .filter(
+            s -> {
+              log.info(s.getName() + " in filter");
+              return true;
+            })
+        .map(
+            s -> {
+              log.info(s.getName() + " in map");
+              return s;
+            })
+        .sorted(
+            (a, b) -> {
+              log.info("comparing {}, {}", a.getName(), b.getName());
+              return a.getAge() - b.getAge();
+            })
+        .map(Student::toString)
+        .forEach(log::info);
+
+    log.info("common pool size = " + ForkJoinPool.commonPool().getPoolSize());
 
     // Find Jayesh
     log.info(
@@ -77,8 +114,6 @@ public class StreamTest {
             .findFirst()
             .map(a -> ((TestInfo) a).seriousLevel())
             .orElse("No Test Info"));
-
-    log.info(Student.toString())
   }
 }
 
@@ -98,7 +133,7 @@ class TempStudent {
 }
 
 @Data
-class Student {
+class Student implements Comparable<Student> {
   private String name;
   private int age;
   private Address address;
@@ -156,6 +191,11 @@ class Student {
         + ", mobileNumbers="
         + mobileNumbers
         + '}';
+  }
+
+  @Override
+  public int compareTo(Student o) {
+    return this.age - o.getAge();
   }
 }
 
