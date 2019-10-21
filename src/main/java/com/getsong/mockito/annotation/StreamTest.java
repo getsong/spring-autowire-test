@@ -4,9 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -49,6 +47,15 @@ public class StreamTest {
     students.sort((a, b) -> b.getAge() - a.getAge());
     log.info(students.toString());
 
+    students.sort(
+        new Comparator<Student>() {
+          @Override
+          public int compare(Student o1, Student o2) {
+            return o1.getAge() - o2.getAge();
+          }
+        });
+    log.info("sort with anonymous class {}", students.toString());
+
     Stream.of(student1, student2, student3).map(Student::getName).forEach(log::info);
 
     IntStream.range(0, 4).mapToObj(i -> "int" + i).forEach(log::info);
@@ -75,6 +82,31 @@ public class StreamTest {
         .forEach(log::info);
 
     log.info("common pool size = " + ForkJoinPool.commonPool().getPoolSize());
+
+    log.info("try flatmap and collect to set, grouping by");
+    Supplier<Stream<String>> streamSupplier2 =
+        () ->
+            students.stream()
+                .peek(s -> log.info("{} in supplier", s.getName()))
+                .flatMap(s -> Stream.of("a1", "b2", "c3"))
+                .peek(log::info);
+    log.info("after supplier");
+    Stream<String> filteredStream = streamSupplier2.get().filter(s -> !s.startsWith("b"));
+    log.info("after filter");
+    Set<String> randoms = filteredStream.collect(Collectors.toSet());
+    log.info("collected set = {}", randoms);
+    Map<Character, List<String>> char2stringList =
+        streamSupplier2.get().collect(Collectors.groupingBy(s -> s.charAt(0)));
+    log.info("collected map = {}", char2stringList);
+
+    Optional<Student> result =
+        students.stream()
+            .reduce(
+                (a, b) -> {
+                  a.setAge(a.getAge() + b.getAge());
+                  return a;
+                });
+    log.info("reduce result = {}", result.map(Student::toString).orElse("No Result"));
 
     // Find Jayesh
     log.info(
