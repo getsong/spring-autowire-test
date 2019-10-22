@@ -3,6 +3,7 @@ package com.getsong.mockito.annotation.jdbc;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
+import java.util.Properties;
 
 /**
  * TODO: Purpose
@@ -15,9 +16,12 @@ public class JdbcTest {
 
   public static void main(String[] args) throws Exception {
     Class.forName("com.mysql.cj.jdbc.Driver");
+    Properties properties = new Properties();
+    properties.put("user", "sqluser");
+    properties.put("password", "sqluserpw");
     try (Connection connection =
             DriverManager.getConnection(
-                "jdbc:mysql://localhost/feedback?user=sqluser&password=sqluserpw&serverTimezone=UTC");
+                "jdbc:mysql://localhost/feedback?serverTimezone=UTC", properties);
         Statement statement = connection.createStatement()) {
       statement.executeUpdate(
           "insert into feedback.comments values (default, 'test', 'testemail', 'test', '2009-09-14', 'test', 'test')");
