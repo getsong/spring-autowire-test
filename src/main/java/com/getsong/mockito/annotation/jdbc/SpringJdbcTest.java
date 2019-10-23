@@ -5,6 +5,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import javax.sql.DataSource;
 
@@ -20,8 +23,11 @@ public class SpringJdbcTest {
 
   JdbcTemplate jdbcTemplate;
 
+  NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
   public SpringJdbcTest(DataSource dataSource) {
     jdbcTemplate = new JdbcTemplate(dataSource);
+    namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
   }
 
   public int getCountOfEmployees() {
@@ -36,11 +42,20 @@ public class SpringJdbcTest {
         "address");
   }
 
+  public String getEmployeeUsingMapSqlParameterSource() {
+    final SqlParameterSource parameterSource = new MapSqlParameterSource().addValue("id", 1);
+    return namedParameterJdbcTemplate.queryForObject(
+        "select first_name from employees where id = :id", parameterSource, String.class);
+  }
+
   public static void main(String[] args) {
     ApplicationContext applicationContext =
         new AnnotationConfigApplicationContext(SpringJdbcTest.class);
     SpringJdbcTest springJdbcTest = applicationContext.getBean(SpringJdbcTest.class);
     log.info("inserted {} employees", springJdbcTest.addEmployee());
     log.info(String.valueOf(springJdbcTest.getCountOfEmployees()));
+    log.info(
+        "get first name by MapSqlParameterSource: {}",
+        springJdbcTest.getEmployeeUsingMapSqlParameterSource());
   }
 }
