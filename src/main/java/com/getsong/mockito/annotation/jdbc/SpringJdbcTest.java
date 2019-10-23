@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * TODO: Purpose
@@ -22,13 +23,16 @@ import javax.sql.DataSource;
 @ComponentScan("com.getsong.mockito.annotation.jdbc")
 public class SpringJdbcTest {
 
-  JdbcTemplate jdbcTemplate;
+  private JdbcTemplate jdbcTemplate;
 
-  NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+  private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-  public SpringJdbcTest(DataSource dataSource) {
+  private EmployeeRowMapper employeeRowMapper;
+
+  public SpringJdbcTest(DataSource dataSource, EmployeeRowMapper employeeRowMapper) {
     jdbcTemplate = new JdbcTemplate(dataSource);
     namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    this.employeeRowMapper = employeeRowMapper;
   }
 
   public int getCountOfEmployees() {
@@ -59,6 +63,13 @@ public class SpringJdbcTest {
         String.class);
   }
 
+  public List<Employee> getEmployeesByFirstName(String firstName) {
+    return jdbcTemplate.query(
+        "select * from employees where first_name = ?",
+        new Object[] {firstName},
+        employeeRowMapper);
+  }
+
   public static void main(String[] args) {
     ApplicationContext applicationContext =
         new AnnotationConfigApplicationContext(SpringJdbcTest.class);
@@ -71,5 +82,6 @@ public class SpringJdbcTest {
     log.info(
         "get last name by BeanPropertySqlParameterSource: {}",
         springJdbcTest.getEmployeeUsingBeanProperty());
+    log.info(springJdbcTest.getEmployeesByFirstName("Jay").toString());
   }
 }
