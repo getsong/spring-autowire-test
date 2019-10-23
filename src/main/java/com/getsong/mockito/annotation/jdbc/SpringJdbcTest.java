@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -48,6 +49,16 @@ public class SpringJdbcTest {
         "select first_name from employees where id = :id", parameterSource, String.class);
   }
 
+  public String getEmployeeUsingBeanProperty() {
+    Employee employee = new Employee();
+    employee.setFirstName("James");
+    final SqlParameterSource parameterSource = new BeanPropertySqlParameterSource(employee);
+    return namedParameterJdbcTemplate.queryForObject(
+        "select last_name from employees where first_name = :firstName",
+        parameterSource,
+        String.class);
+  }
+
   public static void main(String[] args) {
     ApplicationContext applicationContext =
         new AnnotationConfigApplicationContext(SpringJdbcTest.class);
@@ -57,5 +68,8 @@ public class SpringJdbcTest {
     log.info(
         "get first name by MapSqlParameterSource: {}",
         springJdbcTest.getEmployeeUsingMapSqlParameterSource());
+    log.info(
+        "get last name by BeanPropertySqlParameterSource: {}",
+        springJdbcTest.getEmployeeUsingBeanProperty());
   }
 }
