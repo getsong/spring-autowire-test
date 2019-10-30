@@ -9,9 +9,12 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * TODO: Purpose
@@ -27,11 +30,14 @@ public class SpringJdbcTest {
 
   private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+  private SimpleJdbcInsert simpleJdbcInsert;
+
   private EmployeeRowMapper employeeRowMapper;
 
   public SpringJdbcTest(DataSource dataSource, EmployeeRowMapper employeeRowMapper) {
     jdbcTemplate = new JdbcTemplate(dataSource);
     namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    simpleJdbcInsert = new SimpleJdbcInsert(dataSource).withTableName("employees");
     this.employeeRowMapper = employeeRowMapper;
   }
 
@@ -70,6 +76,14 @@ public class SpringJdbcTest {
         employeeRowMapper);
   }
 
+  public int addEmployee1() {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("first_name", "joy");
+    parameters.put("last_name", "peace");
+    parameters.put("address", "ny");
+    return simpleJdbcInsert.execute(parameters);
+  }
+
   public static void main(String[] args) {
     ApplicationContext applicationContext =
         new AnnotationConfigApplicationContext(SpringJdbcTest.class);
@@ -83,5 +97,6 @@ public class SpringJdbcTest {
         "get last name by BeanPropertySqlParameterSource: {}",
         springJdbcTest.getEmployeeUsingBeanProperty());
     log.info(springJdbcTest.getEmployeesByFirstName("Jay").toString());
+    log.info(String.valueOf(springJdbcTest.addEmployee1()));
   }
 }
