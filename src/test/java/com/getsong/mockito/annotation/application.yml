@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost/feedback?serverTimezone=UTC
+    username: admin
+    password: password
+    hikari:
+      maximum-pool-size: 10
+logging:
+  level:
+    root: warn

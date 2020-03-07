@@ -1,5 +1,6 @@
 package com.getsong.mockito.annotation;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,13 +10,16 @@ import org.springframework.stereotype.Service;
  * @since 28/9/2019 3:19 PM
  */
 @Service
+@Log4j2
 public class GinService {
 
-    private int quantity;
+  private int quantity;
 
-    boolean hasGin() {
-        return true;
-    }
+  boolean hasGin() {
+    return true;
+  }
 
-    void pourGin() {}
+  void pourGin() {
+    log.info("pour gin");
+  }
 }

@@ -1,5 +1,6 @@
 package com.getsong.mockito.annotation;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -146,6 +147,9 @@ public class StreamTest {
             .findFirst()
             .map(a -> ((TestInfo) a).seriousLevel())
             .orElse("No Test Info"));
+
+    Student student = Student.builder().name("jamy").age(22).build();
+    log.info("builder student = {}", student);
   }
 }
 
@@ -165,6 +169,7 @@ class TempStudent {
 }
 
 @Data
+@Builder
 class Student implements Comparable<Student> {
   private String name;
   private int age;
